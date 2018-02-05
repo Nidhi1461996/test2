@@ -6,38 +6,40 @@ const server = new Hapi.Server();
 server.connection({ port: 8085 });
 
 function handlerFunc(request, reply) {
-  // axios.get('https://5gj1qvkc5h.execute-api.us-east-1.amazonaws.com/dev/allBooks')
-  //   .then((response) => {
-  //     console.log(response);
-  //     reply(response);
-  //   });
-  let data = '';
+  const data = '';
+  const data2 = '';
   http.get('https://5gj1qvkc5h.execute-api.us-east-1.amazonaws.com/dev/allBooks', (resp) => {
     resp.on('data', (data1) => {
       data += data1;
       resp.on('end', () => {
-        console.log(JSON.parse(data));
+        // console.log(JSON.parse(data));
         data = JSON.parse(data);
-        len = data.books.length;
-        const ids = [];
-        // for (let i = 0; i < len; i++) {
-        //   //ids[i] = data.books[i].id;
-        //   http.get('')
-        // }
-        reply(ids);
+        const len = data.books.length;
+        const ratings = [];
+        for (let i = 0; i < len; i += 1) {
+          // ids[i] = data.books[i].id;
+          const url = 'https://5gj1qvkc5h.execute-api.us-east-1.amazonaws.com/dev/findBookById/';
+          http.get(`https://5gj1qvkc5h.execute-api.us-east-1.amazonaws.com/dev/findBookById/${data.books[i].id}`, (response) => {
+            response.on('data', (rating) => {
+              data2 += rating;
+            });
+            response.on('end', () => {
+              console.log(data2);
+              // reply(JSON.parse(data2));
+            });
+          });
+        }
+        reply(data2);
       });
     }).on('error', (error) => {
       console.log(`Error is: ${error.message}`);
     });
   });
-  // http.get('https://5gj1qvkc5h.execute-api.us-east-1.amazonaws.com/dev/allBooks', (response) => {
-  //   response.on('data', (data) => {
-  //     response.setEncoding('UTF8');
-  //     console.log(JSON.parse(data));
-  //     reply(JSON.parse(data));
-  //   });
-  // });
-}
+
+//   Promise.all([promise1, promise2, promise3]).then(function(values) {
+//   console.log(values);
+// });
+// }
 
 server.route({ method: 'GET', path: '/', handler: handlerFunc });
 server.start((err) => {
